@@ -12,7 +12,7 @@ type receptor struct {
 }
 
 func NewReceptor(state *manager.State) *receptor {
-	return &receptor{}
+	return &receptor{state: state}
 }
 
 func (r *receptor) GetCurrentPower() {
@@ -22,7 +22,7 @@ func (r *receptor) GetCurrentPower() {
 		log.Println(err)
 		return
 	}
-	averagePower, err := strconv.ParseFloat(power.Averge.Power, 64)
+	averagePower, err := strconv.ParseFloat(power, 64)
 	if err != nil {
 		log.Println(err)
 		return

@@ -28,19 +28,19 @@ type State struct {
 }
 
 func NewState() *State {
-	return &State{}
+	return &State{events: make(chan eventMessage, 100)}
 }
 
 func (state *State) Run() {
 
-	go func() {
+	func() {
 		for {
 			m := <-state.events
 
 			//handle events
 			switch m.kind {
 			case POWER:
-				log.Printf("current  power %d", m.value)
+				log.Printf("current  power %f", m.value)
 				break
 
 			}
@@ -61,5 +61,5 @@ func (state *State) ChangeAveragePower(value float64) {
 }
 
 func (state *State) ChangeExecutionTime(value float64) {
-	state.events <- eventMessage{POWER, value}
+	state.events <- eventMessage{TIME, value}
 }

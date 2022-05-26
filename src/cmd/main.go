@@ -15,10 +15,10 @@ func main() {
 
 func runManager() {
 	state := manager.NewState()
-	state.Run()
-
 	r := receptor.NewReceptor(state)
-	r.GetCurrentPower()
+	go r.GetCurrentPower()
+
+	state.Run()
 }
 
 func runHandler() {
