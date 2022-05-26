@@ -8,6 +8,8 @@
             "name": "run",
             "type": "go",
             "request": "launch",
+            "asRoot": true,
+            "console": "integratedTerminal",
             "mode": "auto",
             "program": "${workspaceFolder}/src/cmd/main.go"
         },
