@@ -7,15 +7,15 @@ import (
 	"github.com/arejula27/energy-cluster-manager/internal/manager"
 )
 
-type receptor struct {
-	state *manager.State
+type Receptor struct {
+	State *manager.State
 }
 
-func NewReceptor(state *manager.State) *receptor {
-	return &receptor{state: state}
+func NewReceptor(state *manager.State) *Receptor {
+	return &Receptor{State: state}
 }
 
-func (r *receptor) GetCurrentPower() {
+func (r *Receptor) GetCurrentPower() {
 
 	power, err := runPowerstat()
 	if err != nil {
@@ -27,6 +27,6 @@ func (r *receptor) GetCurrentPower() {
 		log.Println(err)
 		return
 	}
-	r.state.ChangeAveragePower(averagePower)
+	r.State.ChangeAveragePower(averagePower)
 
 }

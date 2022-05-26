@@ -6,7 +6,7 @@ const (
 	OCUPATION  = 0
 	ENERGYCOST = 1
 	POWER      = 2
-	TIME
+	TIME       = 3
 )
 
 type eventMessage struct {
@@ -41,6 +41,9 @@ func (state *State) Run() {
 			switch m.kind {
 			case POWER:
 				log.Printf("current  power %f", m.value)
+				break
+			case TIME:
+				log.Printf("current  time %f", m.value)
 				break
 
 			}

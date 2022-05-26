@@ -1,17 +1,39 @@
 package gateway
 
-import "github.com/gin-gonic/gin"
+import (
+	"log"
+	"time"
 
-func NewHandler() *gin.Engine {
+	"github.com/arejula27/energy-cluster-manager/internal/receptor"
+	"github.com/gin-gonic/gin"
+)
 
+type handler struct {
+	Gin      *gin.Engine
+	Receptor *receptor.Receptor
+}
+
+func NewHandler(receptor *receptor.Receptor) *handler {
 	r := gin.Default()
-	r.POST("/pymemo", handlerPymemo)
-	return r
+	h := &handler{
+		Gin:      r,
+		Receptor: receptor,
+	}
+
+	r.POST("/pymemo", h.handlerPymemo)
+	return h
 
 }
 
-func handlerPymemo(c *gin.Context) {
-	//call pymemo
+func (h *handler) handlerPymemo(c *gin.Context) {
 
+	start := time.Now()
+	//call pymemo
+	time.Sleep(time.Second * 3)
 	//calculate time
+	t := time.Now()
+	time := t.Sub(start)
+	log.Println(float64(time))
+	h.Receptor.State.ChangeExecutionTime(float64(time))
+
 }
