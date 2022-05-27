@@ -1,6 +1,10 @@
 package manager
 
-import "log"
+import (
+	"log"
+	"os/exec"
+	"strconv"
+)
 
 const (
 	OCUPATION  = 0
@@ -25,10 +29,13 @@ type State struct {
 	///state communication
 
 	events chan eventMessage
+
+	//outpus
+	Threshold int
 }
 
 func NewState() *State {
-	return &State{events: make(chan eventMessage, 100)}
+	return &State{events: make(chan eventMessage, 100), Threshold: 125}
 }
 
 func (state *State) Run() {
@@ -45,6 +52,10 @@ func (state *State) Run() {
 			case TIME:
 				log.Printf("current  time %f", m.value)
 				break
+			case OCUPATION:
+				log.Printf("current  ocupation %f", m.value)
+			case ENERGYCOST:
+				log.Printf("current  energy cost %f", m.value)
 
 			}
 		}
@@ -65,4 +76,15 @@ func (state *State) ChangeAveragePower(value float64) {
 
 func (state *State) ChangeExecutionTime(value float64) {
 	state.events <- eventMessage{TIME, value}
+}
+
+func setFrecuenzy(frequenzy int) error {
+	freq := strconv.Itoa(frequenzy)
+	cmd := exec.Command("cpupower", "frequency-set", "--freq", freq)
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	cmd.Wait()
+	return nil
 }
