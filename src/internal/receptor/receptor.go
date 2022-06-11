@@ -8,11 +8,11 @@ import (
 )
 
 type Receptor struct {
-	State *manager.State
+	Manager *manager.Manager
 }
 
-func NewReceptor(state *manager.State) *Receptor {
-	return &Receptor{State: state}
+func NewReceptor(state *manager.Manager) *Receptor {
+	return &Receptor{Manager: state}
 }
 
 func (r *Receptor) GetCurrentPower() {
@@ -27,6 +27,6 @@ func (r *Receptor) GetCurrentPower() {
 		log.Println(err)
 		return
 	}
-	r.State.ChangeAveragePower(averagePower)
+	r.Manager.ChangeAveragePower(averagePower)
 
 }
