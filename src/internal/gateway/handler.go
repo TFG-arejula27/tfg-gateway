@@ -135,7 +135,7 @@ func (h *handler) callPymemo(threshold int) error {
 
 	address := "http://localhost:8080/function/threshold"
 
-	bodyContent := "-t " + strconv.Itoa(threshold)
+	bodyContent := "-i /home/app/function/assets/video1-tom_fisk_pexels_id5210841.mp4"+"-t " + strconv.Itoa(threshold)
 	body := strings.NewReader(bodyContent)
 	req, err := http.NewRequest("POST", address, body)
 
