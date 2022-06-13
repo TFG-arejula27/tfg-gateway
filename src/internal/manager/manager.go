@@ -114,7 +114,8 @@ func (mng *Manager) Run() {
 }
 
 func (mng *Manager) doDecision(d decision) error {
-
+	mng.state.Lock()
+	defer mng.state.Unlock()
 	return nil //TODO quitar
 	err := mng.setFrecuenzy(d.frecuenzy)
 	if err != nil {
@@ -165,9 +166,13 @@ func (mng *Manager) setThreshold(threshold int) {
 //Getter functions outputs
 
 func (mng *Manager) GetMaxOcupation() int {
+	mng.state.Lock()
+	defer mng.state.Unlock()
 	return mng.maxOcupation
 }
 
 func (mng *Manager) GetThreshold() int {
+	mng.state.Lock()
+	defer mng.state.Unlock()
 	return mng.threshold
 }
