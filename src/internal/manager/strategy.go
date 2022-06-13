@@ -3,6 +3,8 @@ package manager
 const (
 	FORWARD = 0
 	LOCAL   = 1
+
+	MODEL_DATA_DIR = "model/"
 )
 
 type decision struct {
@@ -11,5 +13,5 @@ type decision struct {
 	ocupation int
 }
 type strategy interface {
-	takeDecision(s stateProperties) decision
+	takeDecision(state stateProperties, restrictions restrictions) decision
 }

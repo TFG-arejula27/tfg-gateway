@@ -82,7 +82,10 @@ func (h *handler) handlerPymemo(c *gin.Context) {
 		h.Lock()
 		h.ocupation--
 		h.Unlock()
-		h.popRequest()
+		if h.checkAvailability() {
+			h.popRequest()
+		}
+
 	}()
 	//ejecuto
 	log.Println("Request  start execution")
@@ -130,7 +133,7 @@ func (h *handler) forwardPymemo() error {
 }
 
 func (h *handler) callPymemo(threshold int) error {
-	time.Sleep(time.Second * 15)
+	time.Sleep(time.Second * 3)
 	return nil
 
 	address := "http://localhost:8080/function/threshold"

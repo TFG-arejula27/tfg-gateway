@@ -2,8 +2,10 @@ package manager
 
 import (
 	"log"
+	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -21,9 +23,10 @@ type eventMessage struct {
 }
 
 type stateProperties struct {
-	energyCost           float64
-	averageExecutionTime time.Duration
-	averagePower         float64
+	//factors
+	energyCost    float64 //en Kwh
+	executionTime time.Duration
+	averagePower  float64
 }
 
 type state struct {
@@ -32,20 +35,31 @@ type state struct {
 	stateProperties
 }
 
+type restrictions struct {
+	//restrictions
+	maxAllowedEnergycost float64 //En €/h
+	maxAllowedThreshold  int     //[0,255]
+}
+
 type Manager struct {
 
 	//strategy
 	strategy strategy
 
-	///state communication
+	//restrictions
+	restrictions restrictions
 
+	///state
 	events chan eventMessage
-
-	state state
+	state  state
 
 	//outpus
 	threshold    int
 	maxOcupation int
+	frequenzy    int
+
+	//Log
+	log *log.Logger
 }
 
 // La monitorización quiźa sea la parte más delicada, necesitamos saber:
@@ -54,69 +68,124 @@ type Manager struct {
 // 3) tiempo de ejecución de las tareas, ahí tú sabes más que yo... ¿Cómo se puede obtener el tiempo de ejecución fácilmente de openfaas / kubernetes?
 // 4) consumo energético (esto ya lo sabes hacer)
 
-func NewManager(str strategy, last bool, ocupation int) *Manager {
-	return &Manager{
+func NewManager(str strategy, last bool, ocupation int, maxCost float64, maxThreshold int, dir string) *Manager {
+	logFile, err := os.OpenFile(dir+"manager.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	if err != nil {
+		log.Panicln("no se ha podido crear archivo de log")
+	}
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	logMng := log.New(logFile, "", log.LstdFlags)
+
+	mng := &Manager{
 		strategy:     str,
 		events:       make(chan eventMessage, 100),
 		threshold:    0,
 		state:        state{},
+		restrictions: restrictions{maxAllowedEnergycost: maxCost, maxAllowedThreshold: maxThreshold},
 		maxOcupation: ocupation,
+		log:          logMng,
 	}
+
+	mng.getFrecuenzy()
+	mng.logHeader()
+	return mng
 }
 
 func (mng *Manager) Run() {
+
+	go mng.simulateEnergyPrice()
 	//bucle mape
+	time.Sleep(time.Second * 5)
 	go func() {
 		for {
+			time.Sleep(time.Second * 60)
 			//monitoring
 			mng.state.Lock()
 			currentState := stateProperties{
-				energyCost:           mng.state.energyCost,
-				averageExecutionTime: mng.state.averageExecutionTime,
-				averagePower:         mng.state.averagePower,
+				energyCost:    mng.state.energyCost,
+				executionTime: mng.state.executionTime,
+				averagePower:  mng.state.averagePower,
 			}
 			mng.state.Unlock()
-			//analyze and planing
-			decision := mng.strategy.takeDecision(currentState)
-			//execute
-			mng.doDecision(decision)
-			time.Sleep(time.Second * 10)
-		}
-	}()
 
-	func() {
-		for {
-			m := <-mng.events
-			//handle events
-			switch m.kind {
-			case POWER:
-				mng.state.Lock()
-				mng.state.averagePower = m.value.(float64)
-				mng.state.Unlock()
-				log.Printf("current  power %f", m.value)
-				break
-			case TIME:
-				mng.state.Lock()
-				mng.state.averageExecutionTime = m.value.(time.Duration)
-				mng.state.Unlock()
-				log.Printf("current  time %f", m.value)
-				break
-
-			case ENERGYCOST:
-				mng.state.Lock()
-				mng.state.energyCost = m.value.(float64)
-				mng.state.Unlock()
-				log.Printf("current  energy cost %f", m.value)
+			//si gastamos más
+			if currentState.averagePower*currentState.energyCost > mng.restrictions.maxAllowedEnergycost {
+				//analyze and planing
+				decision := mng.strategy.takeDecision(currentState, mng.restrictions)
+				//execute
+				mng.doDecision(decision)
+				log.Println("Decision tomada", decision.frecuenzy, decision.ocupation, decision.thrshold)
 
 			}
+			//si estamos en la potencia correcta no cambiar nada
+			mng.logCurrentStatus()
+
 		}
 	}()
+
+}
+
+func (mng *Manager) simulateEnergyPrice() {
+	e := 0.9
+	for {
+		mng.state.energyCost = e
+		time.Sleep(61 * time.Second)
+		e += 0.4
+
+	}
+
+}
+
+func (mng *Manager) logHeader() {
+	var line string
+	//threshold
+	line += "threshold "
+	//ocupación
+	line += "ocupation "
+	//frecuencia
+	line += "frequenzy "
+	//potencia
+	line += "power "
+	//coste energético
+	line += "energyCost "
+	//throghtput
+	line += "throghtput "
+
+	mng.log.Println(line)
+
+}
+func (mng *Manager) logCurrentStatus() {
+
+	var line string
+	//threshold
+	line += strconv.Itoa(mng.threshold) + " "
+	//ocupación
+	line += strconv.Itoa(mng.maxOcupation) + " "
+	//frecuencia
+	line += strconv.Itoa(mng.frequenzy) + " "
+	//potencia
+	line += strconv.FormatFloat(mng.state.averagePower, 'f', 4, 64) + " "
+	//coste energético
+	line += strconv.FormatFloat(mng.state.energyCost, 'f', 4, 64) + " "
+	//throghtput
+	var throghtput float64
+	time := float64(mng.state.executionTime.Milliseconds() / 1000)
+	if time == 0 {
+		throghtput = 0
+	} else {
+		throghtput = float64(mng.maxOcupation) / time
+	}
+	line += strconv.FormatFloat(throghtput, 'f', 4, 64) + " "
+
+	mng.log.Println(line)
 }
 
 func (mng *Manager) doDecision(d decision) error {
 	mng.state.Lock()
 	defer mng.state.Unlock()
-	return nil //TODO quitar
 	err := mng.setFrecuenzy(d.frecuenzy)
 	if err != nil {
 		return err
@@ -130,19 +199,29 @@ func (mng *Manager) doDecision(d decision) error {
 
 //monitoring functions
 func (mng *Manager) ChangeAveragePower(value float64) {
-	mng.events <- eventMessage{POWER, value}
+	mng.state.Lock()
+	mng.state.averagePower = value
+	mng.state.Unlock()
+	log.Println("current  power ", value)
 }
 
 func (mng *Manager) ChangeExecutionTime(value time.Duration) {
-	mng.events <- eventMessage{TIME, value}
+	mng.state.Lock()
+	mng.state.executionTime = value
+	mng.state.Unlock()
+	log.Println("current  time ", value.Seconds())
 }
 
 func (mng *Manager) ChangeEnergyCost(value float64) {
-	mng.events <- eventMessage{ENERGYCOST, value}
+	mng.state.Lock()
+	mng.state.energyCost = value
+	mng.state.Unlock()
+	log.Println("current  energy cost ", value)
 }
 
 //Resource management functions
 func (mng *Manager) setFrecuenzy(frequenzy int) error {
+	mng.frequenzy = frequenzy
 	freq := strconv.Itoa(frequenzy)
 	cmd := exec.Command("cpupower", "frequency-set", "--freq", freq)
 	err := cmd.Run()
@@ -150,6 +229,21 @@ func (mng *Manager) setFrecuenzy(frequenzy int) error {
 		return err
 	}
 	cmd.Wait()
+	return nil
+}
+
+func (mng *Manager) getFrecuenzy() error {
+	cmd := exec.Command("cpupower", "frequency-info", "-f")
+	output, err := cmd.Output()
+	if err != nil {
+		return err
+	}
+	lines := strings.Split(string(output), "\n")
+	line := strings.Join(strings.Fields(lines[1]), " ")
+	freq := strings.Split(line, " ")[3]
+
+	f, _ := strconv.Atoi(freq)
+	mng.frequenzy = f
 	return nil
 }
 

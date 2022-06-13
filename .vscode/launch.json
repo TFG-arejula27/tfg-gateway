@@ -11,7 +11,8 @@
             "asRoot": true,
             "console": "integratedTerminal",
             "mode": "auto",
-            "program": "${workspaceFolder}/src/cmd/main.go"
+            "program": "${workspaceFolder}/src/cmd/main.go",
+            "args":["-file","${workspaceFolder}/config/"]
         },
     ]
 }

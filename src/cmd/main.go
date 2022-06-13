@@ -1,8 +1,8 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"time"
 
 	"github.com/arejula27/energy-cluster-manager/internal/configuration"
 	"github.com/arejula27/energy-cluster-manager/internal/gateway"
@@ -11,12 +11,13 @@ import (
 )
 
 func main() {
-	conf := configuration.SetConfig()
 
-	strategy := manager.NewGreedyStratey(conf.MaxOcupation)
+	conf, dirConf := initConf()
+
+	strategy := manager.NewGreedyStratey(conf.MaxOcupation, dirConf)
 
 	last := conf.ForwardAdress == ""
-	manager := manager.NewManager(strategy, last, conf.MaxOcupation)
+	manager := manager.NewManager(strategy, last, conf.MaxOcupation, conf.MaxEnergyCost, conf.MaxThreshold, dirConf)
 	fmt.Println(conf)
 	r := receptor.NewReceptor(manager)
 	go runReceptor(r)
@@ -26,11 +27,19 @@ func main() {
 
 }
 
+func initConf() (configuration.Configuration, string) {
+
+	dir := flag.String("file", "~/.rscManager/", "set the directory with the configuration")
+	flag.Parse()
+	return configuration.SetConfig(*dir), *dir
+}
+
 func runReceptor(receptor *receptor.Receptor) {
 	for {
 		//cada dos minutos tomar metrica
-		time.Sleep(time.Second * 120)
+
 		receptor.GetCurrentPower()
+		//time.Sleep(time.Second * 12)
 	}
 
 }
