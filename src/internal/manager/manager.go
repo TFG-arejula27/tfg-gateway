@@ -176,6 +176,8 @@ func (mng *Manager) logCurrentStatus() {
 	if time == 0 {
 		throghtput = 0
 	} else {
+
+		//calcular peticiones totales/tiempo de la última petición
 		throghtput = float64(mng.maxOcupation) / time
 	}
 	line += strconv.FormatFloat(throghtput, 'f', 4, 64) + " "
