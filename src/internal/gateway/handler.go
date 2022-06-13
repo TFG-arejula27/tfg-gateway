@@ -3,7 +3,6 @@ package gateway
 import (
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"strconv"
 	"strings"
 	"sync"
@@ -151,13 +150,13 @@ func (h *handler) callPymemo(threshold int) error {
 		log.Println(err)
 		return err
 	}
-	respDump, err := httputil.DumpResponse(resp, true)
+	//respDump, err := httputil.DumpResponse(resp, true)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	print(string(respDump))
+	//print(string(respDump))
 	defer resp.Body.Close()
 
 	return nil
