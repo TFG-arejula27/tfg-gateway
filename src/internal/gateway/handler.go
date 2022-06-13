@@ -133,8 +133,6 @@ func (h *handler) forwardPymemo() error {
 }
 
 func (h *handler) callPymemo(threshold int) error {
-	time.Sleep(time.Second * 3)
-	return nil
 
 	address := "http://localhost:8080/function/threshold"
 
