@@ -4,6 +4,8 @@ import (
 	"log"
 	"os/exec"
 	"strconv"
+	"sync"
+	"time"
 )
 
 const (
@@ -18,13 +20,16 @@ type eventMessage struct {
 	value interface{}
 }
 
+type stateProperties struct {
+	energyCost           float64
+	averageExecutionTime time.Duration
+	averagePower         float64
+}
+
 type state struct {
 	//state atributes
-	energyCost           []float64
-	averageExecutionTime []float64
-	averagePower         []float64
-	ocupation            int
-	last                 bool
+	sync.Mutex
+	stateProperties
 }
 
 type Manager struct {
@@ -34,15 +39,12 @@ type Manager struct {
 
 	///state communication
 
-	events      chan eventMessage
-	replies     chan *chan (bool)
-	ocupationCh chan int
+	events chan eventMessage
 
 	state state
 
 	//outpus
-	Threshold    int
-	Forward      bool
+	threshold    int
 	maxOcupation int
 }
 
@@ -54,47 +56,56 @@ type Manager struct {
 
 func NewManager(str strategy, last bool, ocupation int) *Manager {
 	return &Manager{
-		strategy:    str,
-		events:      make(chan eventMessage, 100),
-		ocupationCh: make(chan int),
-		Threshold:   0, Forward: false,
-		replies:      make(chan *chan bool, 100),
+		strategy:     str,
+		events:       make(chan eventMessage, 100),
+		threshold:    0,
+		state:        state{},
 		maxOcupation: ocupation,
 	}
 }
 
 func (mng *Manager) Run() {
-
+	//bucle mape
 	go func() {
 		for {
-			o := <-mng.ocupationCh
-			mng.state.ocupation += o
-			log.Printf("current  ocupation %d", mng.state.ocupation)
-
-			if mng.maxOcupation >= mng.state.ocupation && o < 0 {
-				//si es menor que cero liberar un encolado
-				free := <-mng.replies
-				*free <- true
-
+			//monitoring
+			mng.state.Lock()
+			currentState := stateProperties{
+				energyCost:           mng.state.energyCost,
+				averageExecutionTime: mng.state.averageExecutionTime,
+				averagePower:         mng.state.averagePower,
 			}
-
+			mng.state.Unlock()
+			//analyze and planing
+			decision := mng.strategy.takeDecision(currentState)
+			//execute
+			mng.doDecision(decision)
+			time.Sleep(time.Second * 10)
 		}
 	}()
 
 	func() {
 		for {
 			m := <-mng.events
-
 			//handle events
 			switch m.kind {
 			case POWER:
+				mng.state.Lock()
+				mng.state.averagePower = m.value.(float64)
+				mng.state.Unlock()
 				log.Printf("current  power %f", m.value)
 				break
 			case TIME:
+				mng.state.Lock()
+				mng.state.averageExecutionTime = m.value.(time.Duration)
+				mng.state.Unlock()
 				log.Printf("current  time %f", m.value)
 				break
 
 			case ENERGYCOST:
+				mng.state.Lock()
+				mng.state.energyCost = m.value.(float64)
+				mng.state.Unlock()
 				log.Printf("current  energy cost %f", m.value)
 
 			}
@@ -102,48 +113,35 @@ func (mng *Manager) Run() {
 	}()
 }
 
-func (mng *Manager) doDecision(d decision) {
+func (mng *Manager) doDecision(d decision) error {
 
-	switch d.value {
-	case FORWARD:
-		mng.Forward = true
-	case LOCAL:
-		mng.Forward = false
-
+	return nil //TODO quitar
+	err := mng.setFrecuenzy(d.frecuenzy)
+	if err != nil {
+		return err
 	}
+	mng.setMaxOcupation(d.ocupation)
+	mng.setThreshold(d.thrshold)
 
-}
-func (msg *Manager) Eval() {
-	decision := msg.strategy.takeDecision(msg.state)
-	msg.doDecision(decision)
-}
-
-func (mng *Manager) AddExecution(ch *chan (bool)) {
-	if mng.maxOcupation > mng.state.ocupation {
-		*ch <- true
-	} else {
-		mng.replies <- ch
-	}
+	return nil
 
 }
 
-func (state *Manager) ChangeOcupation(value int) {
-	state.ocupationCh <- value
+//monitoring functions
+func (mng *Manager) ChangeAveragePower(value float64) {
+	mng.events <- eventMessage{POWER, value}
 }
 
-func (state *Manager) ChangeEnergyCost(value float64) {
-	state.events <- eventMessage{ENERGYCOST, value}
+func (mng *Manager) ChangeExecutionTime(value time.Duration) {
+	mng.events <- eventMessage{TIME, value}
 }
 
-func (state *Manager) ChangeAveragePower(value float64) {
-	state.events <- eventMessage{POWER, value}
+func (mng *Manager) ChangeEnergyCost(value float64) {
+	mng.events <- eventMessage{ENERGYCOST, value}
 }
 
-func (state *Manager) ChangeExecutionTime(value float64) {
-	state.events <- eventMessage{TIME, value}
-}
-
-func setFrecuenzy(frequenzy int) error {
+//Resource management functions
+func (mng *Manager) setFrecuenzy(frequenzy int) error {
 	freq := strconv.Itoa(frequenzy)
 	cmd := exec.Command("cpupower", "frequency-set", "--freq", freq)
 	err := cmd.Run()
@@ -152,4 +150,24 @@ func setFrecuenzy(frequenzy int) error {
 	}
 	cmd.Wait()
 	return nil
+}
+
+func (mng *Manager) setMaxOcupation(ocupation int) {
+	mng.maxOcupation = ocupation
+
+}
+
+func (mng *Manager) setThreshold(threshold int) {
+	mng.threshold = threshold
+
+}
+
+//Getter functions outputs
+
+func (mng *Manager) GetMaxOcupation() int {
+	return mng.maxOcupation
+}
+
+func (mng *Manager) GetThreshold() int {
+	return mng.threshold
 }

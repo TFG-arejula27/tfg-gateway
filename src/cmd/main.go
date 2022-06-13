@@ -13,20 +13,20 @@ import (
 func main() {
 	conf := configuration.SetConfig()
 
-	strategy := manager.NewDumbStrategy(conf.MaxOcupation)
+	strategy := manager.NewGreedyStratey(conf.MaxOcupation)
 
 	last := conf.ForwardAdress == ""
 	manager := manager.NewManager(strategy, last, conf.MaxOcupation)
 	fmt.Println(conf)
 	r := receptor.NewReceptor(manager)
-	go runManager(r)
+	go runReceptor(r)
 
 	go manager.Run()
-	runHandler(r, conf)
+	runHandler(manager, conf)
 
 }
 
-func runManager(receptor *receptor.Receptor) {
+func runReceptor(receptor *receptor.Receptor) {
 	for {
 		//cada dos minutos tomar metrica
 		time.Sleep(time.Second * 120)
@@ -35,8 +35,8 @@ func runManager(receptor *receptor.Receptor) {
 
 }
 
-func runHandler(receptor *receptor.Receptor, conf configuration.Configuration) {
-	r := gateway.NewHandler(receptor, conf)
+func runHandler(manager *manager.Manager, conf configuration.Configuration) {
+	r := gateway.NewHandler(manager, conf)
 	r.Gin.Run(":" + conf.Port)
 
 }
