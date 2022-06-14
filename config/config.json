@@ -2,6 +2,7 @@
     "port":"8080",
     "maxOcupation":5,
     "threshold":150,
-    "maxEnergyCost": 20.07
+    "maxEnergyCost": 20.07,
+    "maxFrequenzy":1700000
     
 }

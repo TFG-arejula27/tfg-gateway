@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 )
@@ -69,7 +68,7 @@ type Manager struct {
 // 3) tiempo de ejecución de las tareas, ahí tú sabes más que yo... ¿Cómo se puede obtener el tiempo de ejecución fácilmente de openfaas / kubernetes?
 // 4) consumo energético (esto ya lo sabes hacer)
 
-func NewManager(str strategy, last bool, ocupation int, maxCost float64, maxThreshold int, dir string) *Manager {
+func NewManager(str strategy, last bool, ocupation int, maxCost float64, maxThreshold int, dir string, maxFrqz int) *Manager {
 	logFile, err := os.OpenFile(dir+"manager.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		log.Panicln("no se ha podido crear archivo de log")
@@ -90,7 +89,7 @@ func NewManager(str strategy, last bool, ocupation int, maxCost float64, maxThre
 		log:          logMng,
 	}
 
-	mng.getFrecuenzy()
+	mng.setFrecuenzy(maxFrqz)
 	mng.logHeader()
 	return mng
 }
@@ -224,21 +223,6 @@ func (mng *Manager) setFrecuenzy(frequenzy int) error {
 		return err
 	}
 	cmd.Wait()
-	return nil
-}
-
-func (mng *Manager) getFrecuenzy() error {
-	cmd := exec.Command("cpupower", "frequency-info", "-f")
-	output, err := cmd.Output()
-	if err != nil {
-		return err
-	}
-	lines := strings.Split(string(output), "\n")
-	line := strings.Join(strings.Fields(lines[1]), " ")
-	freq := strings.Split(line, " ")[3]
-
-	f, _ := strconv.Atoi(freq)
-	mng.frequenzy = f
 	return nil
 }
 

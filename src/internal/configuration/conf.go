@@ -12,6 +12,7 @@ type Configuration struct {
 	MaxOcupation  int     `json:"maxOcupation"`
 	MaxThreshold  int     `json:"threshold"`
 	MaxEnergyCost float64 `json:"maxEnergyCost"`
+	MaxFrqz       int     `json:"masFrequenzy"`
 }
 
 func SetConfig(dir string) Configuration {
