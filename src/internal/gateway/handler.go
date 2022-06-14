@@ -21,6 +21,10 @@ type handler struct {
 	config    configuration.Configuration
 	ocupation int
 	replies   chan *chan bool
+
+	//throughtput
+	numRqts int
+	start   time.Time
 }
 
 func NewHandler(manager *manager.Manager, conf configuration.Configuration) *handler {
@@ -30,6 +34,8 @@ func NewHandler(manager *manager.Manager, conf configuration.Configuration) *han
 		manager: manager,
 		config:  conf,
 		replies: make(chan *chan bool, 100),
+		start:   time.Now(),
+		numRqts: 0,
 	}
 
 	r.POST("/pymemo", h.handlerPymemo)
@@ -44,6 +50,10 @@ func (h *handler) handlerPymemo(c *gin.Context) {
 	defer func() {
 		end := time.Now()
 		time := end.Sub(start)
+		h.numRqts++
+		timeSinceStart := float64(end.Sub(h.start).Milliseconds()) / 1000
+		throghput := float64(h.numRqts) / timeSinceStart
+		h.manager.ChangeThroughput(throghput)
 		h.manager.ChangeExecutionTime(time)
 	}()
 

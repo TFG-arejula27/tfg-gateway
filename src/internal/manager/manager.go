@@ -57,6 +57,7 @@ type Manager struct {
 	threshold    int
 	maxOcupation int
 	frequenzy    int
+	throghput    float64
 
 	//Log
 	log *log.Logger
@@ -171,16 +172,8 @@ func (mng *Manager) logCurrentStatus() {
 	//coste energético
 	line += strconv.FormatFloat(mng.state.energyCost, 'f', 4, 64) + " "
 	//throghtput
-	var throghtput float64
-	time := float64(mng.state.executionTime.Milliseconds() / 1000)
-	if time == 0 {
-		throghtput = 0
-	} else {
 
-		//calcular peticiones totales/tiempo de la última petición
-		throghtput = float64(mng.maxOcupation) / time
-	}
-	line += strconv.FormatFloat(throghtput, 'f', 4, 64) + " "
+	line += strconv.FormatFloat(mng.throghput, 'f', 4, 64) + " "
 
 	mng.log.Println(line)
 }
@@ -250,12 +243,18 @@ func (mng *Manager) getFrecuenzy() error {
 }
 
 func (mng *Manager) setMaxOcupation(ocupation int) {
+
 	mng.maxOcupation = ocupation
 
 }
 
 func (mng *Manager) setThreshold(threshold int) {
 	mng.threshold = threshold
+
+}
+
+func (mng *Manager) ChangeThroughput(throghput float64) {
+	mng.throghput = throghput
 
 }
 
