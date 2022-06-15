@@ -21,26 +21,20 @@ type eventMessage struct {
 	value interface{}
 }
 
-type stateProperties struct {
-	//factors
-	energyCost    float64 //en Kwh
+type state struct {
+	//state atributes
 	executionTime time.Duration
 	averagePower  float64
 }
 
-type state struct {
-	//state atributes
-	sync.Mutex
-	stateProperties
-}
-
 type restrictions struct {
 	//restrictions
-	maxAllowedEnergycost float64 //En €/h
-	maxAllowedThreshold  int     //[0,255]
+	maxAllowedPower     float64 //En Watts
+	maxAllowedThreshold int     //[0,255]
 }
 
 type Manager struct {
+	sync.Mutex
 
 	//strategy
 	strategy strategy
@@ -68,7 +62,7 @@ type Manager struct {
 // 3) tiempo de ejecución de las tareas, ahí tú sabes más que yo... ¿Cómo se puede obtener el tiempo de ejecución fácilmente de openfaas / kubernetes?
 // 4) consumo energético (esto ya lo sabes hacer)
 
-func NewManager(str strategy, last bool, ocupation int, maxCost float64, maxThreshold int, dir string, maxFrqz int) *Manager {
+func NewManager(str strategy, last bool, ocupation int, maxAllowedPower float64, maxThreshold int, dir string, maxFrqz int) *Manager {
 	logFile, err := os.OpenFile(dir+"manager.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		log.Panicln("no se ha podido crear archivo de log")
@@ -84,7 +78,7 @@ func NewManager(str strategy, last bool, ocupation int, maxCost float64, maxThre
 		events:       make(chan eventMessage, 100),
 		threshold:    0,
 		state:        state{},
-		restrictions: restrictions{maxAllowedEnergycost: maxCost, maxAllowedThreshold: maxThreshold},
+		restrictions: restrictions{maxAllowedPower: maxAllowedPower, maxAllowedThreshold: maxThreshold},
 		maxOcupation: ocupation,
 		log:          logMng,
 	}
@@ -103,16 +97,15 @@ func (mng *Manager) Run() {
 		for {
 			time.Sleep(time.Second * 60)
 			//monitoring
-			mng.state.Lock()
-			currentState := stateProperties{
-				energyCost:    mng.state.energyCost,
+			mng.Lock()
+			currentState := state{
 				executionTime: mng.state.executionTime,
 				averagePower:  mng.state.averagePower,
 			}
-			mng.state.Unlock()
+			mng.Unlock()
 
 			//si gastamos más
-			if currentState.averagePower*currentState.energyCost > mng.restrictions.maxAllowedEnergycost {
+			if currentState.averagePower > mng.restrictions.maxAllowedPower {
 				//analyze and planing
 				decision := mng.strategy.takeDecision(currentState, mng.restrictions)
 				//execute
@@ -129,11 +122,12 @@ func (mng *Manager) Run() {
 }
 
 func (mng *Manager) simulateEnergyPrice() {
+	//todo ponerlo bien
 	e := 0.9
 	for {
-		mng.state.energyCost = e
+		mng.restrictions.maxAllowedPower = e
 		time.Sleep(61 * time.Second)
-		e += 0.4
+		e += 0.4 //TODO ponerlo bien
 
 	}
 
@@ -168,8 +162,8 @@ func (mng *Manager) logCurrentStatus() {
 	line += strconv.Itoa(mng.frequenzy) + " "
 	//potencia
 	line += strconv.FormatFloat(mng.state.averagePower, 'f', 4, 64) + " "
-	//coste energético
-	line += strconv.FormatFloat(mng.state.energyCost, 'f', 4, 64) + " "
+	//coste más allowed
+	line += strconv.FormatFloat(mng.restrictions.maxAllowedPower, 'f', 4, 64) + " "
 	//throghtput
 
 	line += strconv.FormatFloat(mng.throghput, 'f', 4, 64) + " "
@@ -178,8 +172,8 @@ func (mng *Manager) logCurrentStatus() {
 }
 
 func (mng *Manager) doDecision(d decision) error {
-	mng.state.Lock()
-	defer mng.state.Unlock()
+	mng.Lock()
+	defer mng.Unlock()
 	err := mng.setFrecuenzy(d.frecuenzy)
 	if err != nil {
 		return err
@@ -193,24 +187,17 @@ func (mng *Manager) doDecision(d decision) error {
 
 //monitoring functions
 func (mng *Manager) ChangeAveragePower(value float64) {
-	mng.state.Lock()
+	mng.Lock()
 	mng.state.averagePower = value
-	mng.state.Unlock()
+	mng.Unlock()
 	log.Println("current  power ", value)
 }
 
 func (mng *Manager) ChangeExecutionTime(value time.Duration) {
-	mng.state.Lock()
+	mng.Lock()
 	mng.state.executionTime = value
-	mng.state.Unlock()
+	mng.Unlock()
 	log.Println("current  time ", value.Seconds())
-}
-
-func (mng *Manager) ChangeEnergyCost(value float64) {
-	mng.state.Lock()
-	mng.state.energyCost = value
-	mng.state.Unlock()
-	log.Println("current  energy cost ", value)
 }
 
 //Resource management functions
@@ -227,17 +214,22 @@ func (mng *Manager) setFrecuenzy(frequenzy int) error {
 }
 
 func (mng *Manager) setMaxOcupation(ocupation int) {
-
+	mng.Lock()
+	defer mng.Unlock()
 	mng.maxOcupation = ocupation
 
 }
 
 func (mng *Manager) setThreshold(threshold int) {
+	mng.Lock()
+	defer mng.Unlock()
 	mng.threshold = threshold
 
 }
 
 func (mng *Manager) ChangeThroughput(throghput float64) {
+	mng.Lock()
+	defer mng.Unlock()
 	mng.throghput = throghput
 
 }
@@ -245,13 +237,13 @@ func (mng *Manager) ChangeThroughput(throghput float64) {
 //Getter functions outputs
 
 func (mng *Manager) GetMaxOcupation() int {
-	mng.state.Lock()
-	defer mng.state.Unlock()
+	mng.Lock()
+	defer mng.Unlock()
 	return mng.maxOcupation
 }
 
 func (mng *Manager) GetThreshold() int {
-	mng.state.Lock()
-	defer mng.state.Unlock()
+	mng.Lock()
+	defer mng.Unlock()
 	return mng.threshold
 }

@@ -94,7 +94,7 @@ func (strat *GreedyStratey) loadData(dir string) error {
 
 }
 
-func (strat *GreedyStratey) takeDecision(state stateProperties, restrictions restrictions) decision {
+func (strat *GreedyStratey) takeDecision(state state, restrictions restrictions) decision {
 	conjunto := strat.model
 
 	//select first
@@ -110,9 +110,9 @@ func (strat *GreedyStratey) takeDecision(state stateProperties, restrictions res
 
 }
 
-func checkRestrctions(s stateProperties, e ModelElement, r restrictions) bool {
+func checkRestrctions(s state, e ModelElement, r restrictions) bool {
 	//si el coste energético es mayor del permitido
-	if s.energyCost*e.power > r.maxAllowedEnergycost {
+	if e.power > r.maxAllowedPower {
 		return false
 	}
 	//si el threshold es mayor del permitido
