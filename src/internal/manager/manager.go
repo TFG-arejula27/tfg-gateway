@@ -16,11 +16,6 @@ const (
 	EVAL       = 4
 )
 
-type eventMessage struct {
-	kind  int16
-	value interface{}
-}
-
 type state struct {
 	//state atributes
 	executionTime time.Duration
@@ -43,8 +38,7 @@ type Manager struct {
 	restrictions restrictions
 
 	///state
-	events chan eventMessage
-	state  state
+	state state
 
 	//outpus
 	threshold    int
@@ -75,7 +69,6 @@ func NewManager(str strategy, last bool, ocupation int, maxAllowedPower float64,
 
 	mng := &Manager{
 		strategy:     str,
-		events:       make(chan eventMessage, 100),
 		threshold:    0,
 		state:        state{},
 		restrictions: restrictions{maxAllowedPower: maxAllowedPower, maxAllowedThreshold: maxThreshold},
