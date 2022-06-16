@@ -13,5 +13,5 @@ type decision struct {
 	ocupation int
 }
 type strategy interface {
-	takeDecision(state stateProperties, restrictions restrictions) decision
+	takeDecision(state state, restrictions restrictions) decision
 }
