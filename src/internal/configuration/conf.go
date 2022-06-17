@@ -11,7 +11,7 @@ type Configuration struct {
 	ForwardAdress          string  `json:"forwardAdress"`
 	MaxOcupation           int     `json:"maxOcupation"`
 	MaxThreshold           int     `json:"threshold"`
-	MaxEnergyCost          float64 `json:"maxEnergyCost"`
+	MaxPowerAllowed        float64 `json:"maxPowerAllowed"`
 	MaxFrqz                int     `json:"masFrequenzy"`
 	MaxEnergyCostPerPymemo float64 `json:"maxEnergyCostPerPymemo"`
 }
