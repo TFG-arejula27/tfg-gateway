@@ -14,6 +14,7 @@ import (
 type ModelElement struct {
 	decision   decision
 	power      float64
+	energy     float64
 	throghtput float64
 }
 
@@ -94,14 +95,15 @@ func (strat *GreedyStratey) loadData(dir string) error {
 
 }
 
-func (strat *GreedyStratey) takeDecision(state state, restrictions restrictions) decision {
+func (strat *GreedyStratey) takeDecision(state state, restrictions restrictions) (decision, stats) {
 	conjunto := strat.model
 
 	//select first
 	for _, modelElement := range conjunto {
 		if checkRestrctions(state, modelElement, restrictions) {
 			//es solución
-			return modelElement.decision
+			stats := stats{energyWasted: modelElement.energy}
+			return modelElement.decision, stats
 		}
 
 	}
@@ -111,14 +113,34 @@ func (strat *GreedyStratey) takeDecision(state state, restrictions restrictions)
 }
 
 func checkRestrctions(s state, e ModelElement, r restrictions) bool {
-	//si el coste energético es mayor del permitido
-	if e.power > r.maxAllowedPower {
+
+	if beatsMaxPower(s, e, r) {
 		return false
 	}
 	//si el threshold es mayor del permitido
 	if e.decision.thrshold > r.maxAllowedThreshold {
 		return false
 	}
+	return true
+
+}
+
+func beatsMaxPower(s state, e ModelElement, r restrictions) bool {
+	//si el coste energético es mayor del permitido
+	return e.power > r.maxAllowedPower
+
+}
+
+func beatsMaxCostPerPymemo(s state, e ModelElement, r restrictions) bool {
+	pymemoEnergyCost := e.energy / float64(e.decision.ocupation) //J
+	if pymemoEnergyCost/3600000*s.energyPrice > r.maxAllowedCostPerPymemo {
+		return false
+	}
+	return true
+
+}
+
+func beatsMeanMaxCostPerPymemo(s state, e ModelElement, r restrictions) bool {
 	return true
 
 }

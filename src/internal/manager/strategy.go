@@ -12,6 +12,11 @@ type decision struct {
 	thrshold  int
 	ocupation int
 }
+
+type stats struct {
+	energyWasted float64
+	time         float64
+}
 type strategy interface {
-	takeDecision(state state, restrictions restrictions) decision
+	takeDecision(state state, restrictions restrictions) (decision, stats)
 }
