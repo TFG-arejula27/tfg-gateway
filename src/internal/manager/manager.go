@@ -183,12 +183,16 @@ func (mng *Manager) logCurrentStatus() {
 
 func (mng *Manager) doDecision(d decision) error {
 
-	err := mng.setFrecuenzy(d.frecuenzy)
-	if err != nil {
-		return err
+	if d.ocupation > 0 {
+		err := mng.setFrecuenzy(d.frecuenzy)
+		if err != nil {
+			return err
+		}
+		mng.setThreshold(d.thrshold)
+
 	}
+
 	mng.setMaxOcupation(d.ocupation)
-	mng.setThreshold(d.thrshold)
 
 	return nil
 
