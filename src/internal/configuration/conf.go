@@ -12,7 +12,7 @@ type Configuration struct {
 	MaxOcupation           int     `json:"maxOcupation"`
 	MaxThreshold           int     `json:"threshold"`
 	MaxPowerAllowed        float64 `json:"maxPowerAllowed"`
-	MaxFrqz                int     `json:"masFrequenzy"`
+	MaxFrqz                int     `json:"maxFrequenzy"`
 	MaxEnergyCostPerPymemo float64 `json:"maxEnergyCostPerPymemo"`
 }
 
