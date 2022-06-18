@@ -108,7 +108,7 @@ func (mng *Manager) Run() {
 			decision, stats := mng.strategy.takeDecision(currentState, mng.restrictions)
 			mng.stats = stats
 			//execute
-			log.Println(decision)
+
 			err := mng.doDecision(decision)
 			if err != nil {
 				panic(err)
