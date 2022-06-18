@@ -93,8 +93,7 @@ func (mng *Manager) Run() {
 	time.Sleep(time.Second * 5)
 	go func() {
 		for {
-			log.Println("60 s until text mape iteration")
-			time.Sleep(time.Second * 60)
+
 			//monitoring
 			mng.Lock()
 			currentState := state{
@@ -119,7 +118,8 @@ func (mng *Manager) Run() {
 			//			}
 			//si estamos en la potencia correcta no cambiar nada
 			mng.logCurrentStatus()
-
+			log.Println("60 s until text mape iteration")
+			time.Sleep(time.Second * 60)
 		}
 	}()
 
