@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -108,6 +109,7 @@ func (mng *Manager) Run() {
 				decision, stats := mng.strategy.takeDecision(currentState, mng.restrictions)
 				mng.stats = stats
 				//execute
+				fmt.Println(decision)
 				mng.doDecision(decision)
 				log.Println("Decision tomada", decision.frecuenzy, decision.ocupation, decision.thrshold)
 
@@ -124,7 +126,7 @@ func (mng *Manager) simulateEnergyPrice() {
 	//todo ponerlo bien
 	for {
 		mng.restrictions.maxAllowedPower -= 3
-		time.Sleep(121 * time.Second)
+		time.Sleep(241 * time.Second)
 
 	}
 
@@ -168,7 +170,7 @@ func (mng *Manager) logCurrentStatus() {
 	line += strconv.FormatFloat(mng.throghput, 'f', 4, 64) + " "
 	//evolución energía un pymemo
 	line += strconv.FormatFloat(mng.stats.energyWasted/float64(mng.maxOcupation), 'f', 4, 64) + " "
-
+	fmt.Println(line)
 	mng.log.Println(line)
 }
 
