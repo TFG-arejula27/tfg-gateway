@@ -2,6 +2,7 @@ package manager
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -90,6 +91,12 @@ func (strat *GreedyStratey) loadData(dir string) error {
 		return strat.model[i].throghtput > strat.model[j].throghtput
 
 	})
+	for _, v := range strat.model {
+		if v.decision.frecuenzy == 1600000 && v.decision.ocupation == 5 {
+			fmt.Println(v)
+		}
+
+	}
 
 	return nil
 
@@ -127,6 +134,7 @@ func checkRestrctions(s state, e ModelElement, r restrictions) bool {
 
 func beatsMaxPower(s state, e ModelElement, r restrictions) bool {
 	//si el coste energético es mayor del permitido
+	log.Println("modelo", e.power, "allowed", r.maxAllowedPower)
 	return e.power > r.maxAllowedPower
 
 }
