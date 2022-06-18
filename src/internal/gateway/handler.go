@@ -54,13 +54,7 @@ func (h *handler) handlerPymemo(c *gin.Context) {
 
 	start := time.Now()
 	defer func() {
-		end := time.Now()
-		time := end.Sub(start)
-		h.numRqts++
-		timeSinceStart := float64(end.Sub(h.start).Milliseconds()) / 1000
-		throghput := float64(h.numRqts) / timeSinceStart
-		h.manager.ChangeThroughput(throghput)
-		h.manager.ChangeExecutionTime(time)
+
 	}()
 
 	//comprobar ocupación
@@ -73,6 +67,13 @@ func (h *handler) handlerPymemo(c *gin.Context) {
 		log.Println("Request fordwarded")
 		h.forwardPymemo()
 		c.String(http.StatusOK, "ok")
+		end := time.Now()
+		time := end.Sub(start)
+		h.numRqts++
+		timeSinceStart := float64(end.Sub(h.start).Milliseconds()) / 1000
+		throghput := float64(h.numRqts) / timeSinceStart
+		h.manager.ChangeThroughput(throghput)
+		h.manager.ChangeExecutionTime(time)
 		return
 
 	}
@@ -114,7 +115,14 @@ func (h *handler) handlerPymemo(c *gin.Context) {
 	}
 	c.String(http.StatusOK, "ok")
 	log.Println("request executed")
-	//calculate time
+	end := time.Now()
+	time := end.Sub(start)
+	h.numRqts++
+	timeSinceStart := float64(end.Sub(h.start).Milliseconds()) / 1000
+	throghput := float64(h.numRqts) / timeSinceStart
+	h.manager.ChangeThroughput(throghput)
+	h.manager.ChangeExecutionTime(time)
+	return
 
 }
 
