@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -181,12 +182,12 @@ func (mng *Manager) logCurrentStatus() {
 }
 
 func (mng *Manager) doDecision(d decision) error {
-	mng.Lock()
-	defer mng.Unlock()
+
 	err := mng.setFrecuenzy(d.frecuenzy)
 	if err != nil {
 		return err
 	}
+	fmt.Println("hola")
 	mng.setMaxOcupation(d.ocupation)
 	mng.setThreshold(d.thrshold)
 
@@ -211,6 +212,8 @@ func (mng *Manager) ChangeExecutionTime(value time.Duration) {
 
 //Resource management functions
 func (mng *Manager) setFrecuenzy(frequenzy int) error {
+	mng.Lock()
+	defer mng.Unlock()
 	mng.frequenzy = frequenzy
 	freq := strconv.Itoa(frequenzy)
 	cmd := exec.Command("cpupower", "frequency-set", "--freq", freq)
