@@ -110,7 +110,10 @@ func (mng *Manager) Run() {
 				mng.stats = stats
 				//execute
 				log.Println(decision)
-				mng.doDecision(decision)
+				err := mng.doDecision(decision)
+				if err != nil {
+					panic(err)
+				}
 				//log.Println("Decision tomada", decision.frecuenzy, decision.ocupation, decision.thrshold)
 				log.Println(decision)
 			}
