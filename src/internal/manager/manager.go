@@ -104,19 +104,19 @@ func (mng *Manager) Run() {
 			mng.Unlock()
 
 			//si gastamos más
-			if currentState.averagePower > mng.restrictions.maxAllowedPower {
-				//analyze and planing
-				decision, stats := mng.strategy.takeDecision(currentState, mng.restrictions)
-				mng.stats = stats
-				//execute
-				log.Println(decision)
-				err := mng.doDecision(decision)
-				if err != nil {
-					panic(err)
-				}
-				//log.Println("Decision tomada", decision.frecuenzy, decision.ocupation, decision.thrshold)
-				log.Println("decision", decision)
+			//	if currentState.averagePower > mng.restrictions.maxAllowedPower {
+			//analyze and planing
+			decision, stats := mng.strategy.takeDecision(currentState, mng.restrictions)
+			mng.stats = stats
+			//execute
+			log.Println(decision)
+			err := mng.doDecision(decision)
+			if err != nil {
+				panic(err)
 			}
+			//log.Println("Decision tomada", decision.frecuenzy, decision.ocupation, decision.thrshold)
+			log.Println("decision", decision)
+			//			}
 			//si estamos en la potencia correcta no cambiar nada
 			mng.logCurrentStatus()
 
