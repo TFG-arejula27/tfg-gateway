@@ -170,7 +170,6 @@ func (mng *Manager) logCurrentStatus() {
 	line += strconv.FormatFloat(mng.throghput, 'f', 4, 64) + " "
 	//evolución energía un pymemo
 	line += strconv.FormatFloat(mng.stats.energyWasted/float64(mng.maxOcupation), 'f', 4, 64) + " "
-	fmt.Println(line)
 	mng.log.Println(line)
 }
 
