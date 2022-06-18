@@ -152,9 +152,9 @@ func (mng *Manager) logHeader() {
 	//coste energético
 	line += "energyCost "
 	//throghtput
-	line += "throghtput"
+	line += "throghtput "
 	//evolución energía un pymemo
-	line += "pymemoEnergy"
+	line += "pymemoEnergy "
 	//lamda
 
 	mng.log.Println(line)
