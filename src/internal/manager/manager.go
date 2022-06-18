@@ -110,7 +110,6 @@ func (mng *Manager) Run() {
 				decision, stats := mng.strategy.takeDecision(currentState, mng.restrictions)
 				mng.stats = stats
 				//execute
-				fmt.Println(decision)
 				mng.doDecision(decision)
 				log.Println("Decision tomada", decision.frecuenzy, decision.ocupation, decision.thrshold)
 
@@ -216,7 +215,6 @@ func (mng *Manager) setFrecuenzy(frequenzy int) error {
 	if err != nil {
 		return err
 	}
-	cmd.Wait()
 	return nil
 }
 
