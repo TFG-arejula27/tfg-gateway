@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -94,7 +93,7 @@ func (mng *Manager) Run() {
 	time.Sleep(time.Second * 5)
 	go func() {
 		for {
-			fmt.Println("60 s until text mape iteration")
+			log.Println("60 s until text mape iteration")
 			time.Sleep(time.Second * 60)
 			//monitoring
 			mng.Lock()
