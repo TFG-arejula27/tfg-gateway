@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -116,7 +115,7 @@ func (mng *Manager) Run() {
 					panic(err)
 				}
 				//log.Println("Decision tomada", decision.frecuenzy, decision.ocupation, decision.thrshold)
-				log.Println(decision)
+				log.Println("decision", decision)
 			}
 			//si estamos en la potencia correcta no cambiar nada
 			mng.logCurrentStatus()
@@ -187,7 +186,6 @@ func (mng *Manager) doDecision(d decision) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("hola")
 	mng.setMaxOcupation(d.ocupation)
 	mng.setThreshold(d.thrshold)
 
