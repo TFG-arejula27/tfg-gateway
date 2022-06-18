@@ -108,7 +108,7 @@ func (strat *GreedyStratey) takeDecision(state state, restrictions restrictions)
 
 	}
 
-	panic("No existe solución")
+	return decision{ocupation: 0}, stats{}
 
 }
 

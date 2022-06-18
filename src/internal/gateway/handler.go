@@ -45,6 +45,12 @@ func NewHandler(manager *manager.Manager, conf configuration.Configuration) *han
 
 func (h *handler) handlerPymemo(c *gin.Context) {
 
+	if h.manager.GetMaxOcupation() == 0 {
+		c.AbortWithStatus(500)
+		return
+
+	}
+
 	start := time.Now()
 	defer func() {
 		end := time.Now()
