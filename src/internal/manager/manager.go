@@ -139,7 +139,9 @@ func (mng *Manager) Run() {
 
 func (mng *Manager) simulateEnergyPrice() {
 	for {
+		time.Sleep(240 * time.Second)
 		mng.state.energyPrice += 5
+
 	}
 
 }
@@ -153,9 +155,9 @@ func (mng *Manager) logHeader() {
 	//frecuencia
 	line += "frequenzy "
 	//potencia
-	line += "power"
+	line += "power "
 	//coste energético
-	line += "energyCost "
+	line += "maxAllowedPower "
 	//throghtput
 	line += "throghtput "
 	//evolución energía un pymemo
