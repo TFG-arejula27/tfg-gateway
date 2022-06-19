@@ -121,7 +121,7 @@ func (strat *GreedyStratey) takeDecision(state state, restrictions restrictions)
 
 func checkRestrctions(s state, e ModelElement, r restrictions) bool {
 
-	if beatsMaxPower(s, e, r) {
+	if beatsMaxCostPerPymemo(s, e, r) {
 		return false
 	}
 	//si el threshold es mayor del permitido

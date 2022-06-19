@@ -23,6 +23,11 @@ type state struct {
 	energyPrice   float64 //Kwh
 }
 
+type pymemoProperties struct {
+	id     int
+	energy float64
+}
+
 type restrictions struct {
 	//restrictions
 	maxAllowedPower         float64 //En Watts
@@ -42,11 +47,16 @@ type Manager struct {
 	///state
 	state state
 	stats stats
+
+	energyPerRqt []pymemoProperties
+
 	//outpus
-	threshold    int
-	maxOcupation int
-	frequenzy    int
-	throghput    float64
+	threshold       int
+	maxOcupation    int
+	frequenzy       int
+	throghput       float64
+	energyPymemo    float64
+	curretExecution int
 
 	//Log
 	log *log.Logger
@@ -79,6 +89,7 @@ func NewManager(str strategy, last bool, ocupation int, maxAllowedPower float64,
 			maxAllowedCostPerPymemo: maxAllowedCostPerPymemo},
 		maxOcupation: ocupation,
 		log:          logMng,
+		energyPerRqt: []pymemoProperties{},
 	}
 
 	mng.setFrecuenzy(maxFrqz)
@@ -156,7 +167,8 @@ func (mng *Manager) logHeader() {
 	line += "throghtput "
 	//evolución energía un pymemo
 	line += "pymemoEnergy "
-	//lamda
+	//max eneryPer pymemo
+	line += "pymemoMaxAllowedEnergy "
 
 	mng.log.Println(line)
 
@@ -177,7 +189,8 @@ func (mng *Manager) logCurrentStatus() {
 	//throghtput
 	line += strconv.FormatFloat(mng.throghput, 'f', 4, 64) + " "
 	//evolución energía un pymemo
-	line += strconv.FormatFloat(mng.state.executionTime.Seconds()*mng.state.averagePower, 'f', 4, 64) + " "
+	line += strconv.FormatFloat(mng.energyPymemo, 'f', 4, 64) + " "
+	line += strconv.FormatFloat(mng.restrictions.maxAllowedCostPerPymemo, 'f', 4, 64) + " "
 	mng.log.Println(line)
 }
 
@@ -203,6 +216,10 @@ func (mng *Manager) ChangeAveragePower(value float64) {
 	mng.Lock()
 	mng.state.averagePower = value
 	mng.Unlock()
+	for _, rqt := range mng.energyPerRqt {
+		rqt.energy += value * 60 / float64(mng.curretExecution)
+
+	}
 	log.Println("current  power ", value)
 }
 
@@ -260,4 +277,23 @@ func (mng *Manager) GetThreshold() int {
 	mng.Lock()
 	defer mng.Unlock()
 	return mng.threshold
+}
+
+func (mng *Manager) startRqt(id int) {
+	mng.curretExecution++
+	mng.energyPerRqt = append(mng.energyPerRqt, pymemoProperties{id: id})
+
+}
+
+func (mng *Manager) rqtEnded(id int) {
+	mng.curretExecution--
+	for i, rqt := range mng.energyPerRqt {
+		if rqt.id == id {
+			mng.energyPymemo = rqt.energy
+			mng.energyPerRqt = append(mng.energyPerRqt[:i], mng.energyPerRqt[i+1:]...)
+			return
+		}
+
+	}
+
 }
