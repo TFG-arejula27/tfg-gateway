@@ -75,6 +75,7 @@ func (strat *GreedyStratey) loadData(dir string) error {
 			newElement := ModelElement{
 				power:      log.Power,
 				throghtput: throghtput,
+				energy:     log.Energy,
 				decision: decision{
 					frecuenzy: log.Frecuenzy,
 					thrshold:  log.Threshold,
@@ -142,7 +143,6 @@ func beatsMaxPower(s state, e ModelElement, r restrictions) bool {
 func beatsMaxCostPerPymemo(s state, e ModelElement, r restrictions) bool {
 	pymemoEnergyCost := e.energy / float64(e.decision.ocupation) //J
 	maxCost := pymemoEnergyCost / 3600000 * s.energyPrice
-	fmt.Println(maxCost)
 	if maxCost > r.maxAllowedCostPerPymemo {
 		return false
 	}

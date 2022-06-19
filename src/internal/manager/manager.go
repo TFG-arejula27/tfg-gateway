@@ -82,7 +82,7 @@ func NewManager(str strategy, last bool, ocupation int, maxAllowedPower float64,
 	mng := &Manager{
 		strategy:  str,
 		threshold: 0,
-		state:     state{},
+		state:     state{energyPrice: 10},
 		restrictions: restrictions{
 			maxAllowedPower:         maxAllowedPower,
 			maxAllowedThreshold:     maxThreshold,
@@ -110,6 +110,7 @@ func (mng *Manager) Run() {
 			currentState := state{
 				executionTime: mng.state.executionTime,
 				averagePower:  mng.state.averagePower,
+				energyPrice:   mng.state.energyPrice,
 			}
 			mng.Unlock()
 
@@ -137,16 +138,8 @@ func (mng *Manager) Run() {
 }
 
 func (mng *Manager) simulateEnergyPrice() {
-	//todo ponerlo bien
-	add := float64(-1000)
-	time.Sleep(240 * time.Second)
 	for {
-		if mng.restrictions.maxAllowedPower <= 2871 {
-			add = float64(1000)
-		}
-		mng.restrictions.maxAllowedPower += add
-		time.Sleep(300 * time.Second)
-
+		mng.state.energyPrice += 5
 	}
 
 }

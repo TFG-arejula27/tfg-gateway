@@ -2,7 +2,7 @@
     "port":"8080",
     "maxOcupation":5,
     "threshold":150,
-    "maxPowerAllowed": 20.07,
+    "maxEnergyCostPerPymemo": 0.00475,
     "maxFrequenzy":1700000
     
 }
