@@ -162,6 +162,7 @@ func (mng *Manager) logHeader() {
 	line += "pymemoEnergy "
 	//max eneryPer pymemo
 	line += "pymemoMaxAllowedEnergy "
+	line += "price "
 
 	mng.log.Println(line)
 
@@ -184,6 +185,7 @@ func (mng *Manager) logCurrentStatus() {
 	//evolución energía un pymemo
 	line += strconv.FormatFloat(mng.energyPymemo, 'f', 4, 64) + " "
 	line += strconv.FormatFloat(mng.restrictions.maxAllowedCostPerPymemo, 'f', 4, 64) + " "
+	line += strconv.FormatFloat(mng.state.energyPrice, 'f', 4, 64) + " "
 	mng.log.Println(line)
 }
 
