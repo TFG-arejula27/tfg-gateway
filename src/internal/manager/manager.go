@@ -48,8 +48,8 @@ type Manager struct {
 	state state
 	stats stats
 
-	totalEnergy float64
-	totalRqt    int
+	totalCost float64
+	totalRqt  int
 
 	//outpus
 	threshold       int
@@ -185,9 +185,8 @@ func (mng *Manager) logCurrentStatus() {
 	//throghtput
 	line += strconv.FormatFloat(mng.throghput, 'f', 4, 64) + " "
 	//evolución coste  un pymemo
-	energy := mng.totalEnergy / float64(mng.totalRqt)
-	cost := energy / 360000 * mng.state.energyPrice
-	line += strconv.FormatFloat(cost, 'f', 4, 64) + " "
+
+	line += strconv.FormatFloat(mng.totalCost/float64(mng.totalRqt), 'f', 4, 64) + " "
 	line += strconv.FormatFloat(mng.restrictions.maxAllowedCostPerPymemo, 'f', 4, 64) + " "
 	line += strconv.FormatFloat(mng.state.energyPrice, 'f', 4, 64) + " "
 	mng.log.Println(line)
@@ -215,7 +214,9 @@ func (mng *Manager) ChangeAveragePower(value float64) {
 	mng.Lock()
 	mng.state.averagePower = value
 	mng.Unlock()
-	mng.totalEnergy += value * 60
+	energy := value * 60
+	cost := energy / 360000 * mng.state.energyPrice
+	mng.totalCost += cost
 	log.Println("current  power ", value)
 }
 
