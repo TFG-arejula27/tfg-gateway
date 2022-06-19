@@ -161,9 +161,9 @@ func (mng *Manager) logHeader() {
 	//throghtput
 	line += "throghtput "
 	//evolución energía un pymemo
-	line += "pymemoEnergy "
+	line += "pymemoCost "
 	//max eneryPer pymemo
-	line += "pymemoMaxAllowedEnergy "
+	line += "pymemoMaxAllowedCost "
 	line += "price "
 
 	mng.log.Println(line)
@@ -184,8 +184,10 @@ func (mng *Manager) logCurrentStatus() {
 	line += strconv.FormatFloat(mng.restrictions.maxAllowedPower, 'f', 4, 64) + " "
 	//throghtput
 	line += strconv.FormatFloat(mng.throghput, 'f', 4, 64) + " "
-	//evolución energía un pymemo
-	line += strconv.FormatFloat(mng.energyPymemo, 'f', 4, 64) + " "
+	//evolución coste  un pymemo
+	pymemoEnergyCost := mng.energyPymemo //J
+	cost := pymemoEnergyCost / 3600000 * mng.state.energyPrice
+	line += strconv.FormatFloat(cost, 'f', 4, 64) + " "
 	line += strconv.FormatFloat(mng.restrictions.maxAllowedCostPerPymemo, 'f', 4, 64) + " "
 	line += strconv.FormatFloat(mng.state.energyPrice, 'f', 4, 64) + " "
 	mng.log.Println(line)
