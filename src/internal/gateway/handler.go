@@ -21,6 +21,7 @@ type handler struct {
 	config    configuration.Configuration
 	ocupation int
 	replies   chan *chan bool
+	id        int
 
 	//throughtput
 	numRqts int
@@ -90,6 +91,9 @@ func (h *handler) handlerPymemo(c *gin.Context) {
 	}
 	//espero a que sea mi turno
 	<-waitUntil
+	h.id++
+	id := h.id
+	h.manager.StartRqt(id)
 	h.Lock()
 	h.ocupation++
 	h.Unlock()
@@ -118,6 +122,7 @@ func (h *handler) handlerPymemo(c *gin.Context) {
 	end := time.Now()
 	time := end.Sub(start)
 	h.numRqts++
+	h.manager.RqtEnded(id)
 	timeSinceStart := float64(end.Sub(h.start).Milliseconds()) / 1000
 	throghput := float64(h.numRqts) / timeSinceStart
 	h.manager.ChangeThroughput(throghput)

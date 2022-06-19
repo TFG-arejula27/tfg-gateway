@@ -279,13 +279,13 @@ func (mng *Manager) GetThreshold() int {
 	return mng.threshold
 }
 
-func (mng *Manager) startRqt(id int) {
+func (mng *Manager) StartRqt(id int) {
 	mng.curretExecution++
 	mng.energyPerRqt = append(mng.energyPerRqt, pymemoProperties{id: id})
 
 }
 
-func (mng *Manager) rqtEnded(id int) {
+func (mng *Manager) RqtEnded(id int) {
 	mng.curretExecution--
 	for i, rqt := range mng.energyPerRqt {
 		if rqt.id == id {
