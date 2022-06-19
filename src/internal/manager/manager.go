@@ -140,7 +140,7 @@ func (mng *Manager) Run() {
 func (mng *Manager) simulateEnergyPrice() {
 	for {
 		time.Sleep(240 * time.Second)
-		mng.restrictions.maxAllowedEnergyPerPymemo -= 2
+		mng.restrictions.maxAllowedEnergyPerPymemo -= 1000
 
 	}
 
