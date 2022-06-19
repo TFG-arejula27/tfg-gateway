@@ -138,14 +138,14 @@ func (mng *Manager) Run() {
 
 func (mng *Manager) simulateEnergyPrice() {
 	//todo ponerlo bien
-	add := float64(-3)
+	add := float64(-1000)
 	time.Sleep(240 * time.Second)
 	for {
-		if mng.restrictions.maxAllowedPower <= 45 {
-			add = float64(3)
+		if mng.restrictions.maxAllowedPower <= 2871 {
+			add = float64(1000)
 		}
 		mng.restrictions.maxAllowedPower += add
-		time.Sleep(241 * time.Second)
+		time.Sleep(300 * time.Second)
 
 	}
 
