@@ -30,9 +30,9 @@ type pymemoProperties struct {
 
 type restrictions struct {
 	//restrictions
-	maxAllowedPower         float64 //En Watts
-	maxAllowedThreshold     int     //[0,255]
-	maxAllowedCostPerPymemo float64 //en €
+	maxAllowedPower           float64 //En Watts
+	maxAllowedThreshold       int     //[0,255]
+	maxAllowedEnergyPerPymemo float64 //en J
 }
 
 type Manager struct {
@@ -48,8 +48,8 @@ type Manager struct {
 	state state
 	stats stats
 
-	totalCost float64
-	totalRqt  int
+	totalEnergy float64
+	totalRqt    int
 
 	//outpus
 	threshold       int
@@ -69,7 +69,7 @@ type Manager struct {
 // 3) tiempo de ejecución de las tareas, ahí tú sabes más que yo... ¿Cómo se puede obtener el tiempo de ejecución fácilmente de openfaas / kubernetes?
 // 4) consumo energético (esto ya lo sabes hacer)
 
-func NewManager(str strategy, last bool, ocupation int, maxAllowedPower float64, maxThreshold int, dir string, maxFrqz int, maxAllowedCostPerPymemo float64) *Manager {
+func NewManager(str strategy, last bool, ocupation int, maxAllowedPower float64, maxThreshold int, dir string, maxFrqz int, maxAllowedEnergyPerPymemo float64) *Manager {
 	logFile, err := os.OpenFile(dir+"manager.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		log.Panicln("no se ha podido crear archivo de log")
@@ -83,11 +83,11 @@ func NewManager(str strategy, last bool, ocupation int, maxAllowedPower float64,
 	mng := &Manager{
 		strategy:  str,
 		threshold: 0,
-		state:     state{energyPrice: 10},
+		state:     state{},
 		restrictions: restrictions{
-			maxAllowedPower:         maxAllowedPower,
-			maxAllowedThreshold:     maxThreshold,
-			maxAllowedCostPerPymemo: maxAllowedCostPerPymemo},
+			maxAllowedPower:           maxAllowedPower,
+			maxAllowedThreshold:       maxThreshold,
+			maxAllowedEnergyPerPymemo: maxAllowedEnergyPerPymemo},
 		maxOcupation: ocupation,
 		log:          logMng,
 	}
@@ -140,7 +140,7 @@ func (mng *Manager) Run() {
 func (mng *Manager) simulateEnergyPrice() {
 	for {
 		time.Sleep(240 * time.Second)
-		mng.state.energyPrice += 5
+		mng.restrictions.maxAllowedEnergyPerPymemo -= 2
 
 	}
 
@@ -163,7 +163,7 @@ func (mng *Manager) logHeader() {
 	//evolución energía un pymemo
 	line += "pymemoCost "
 	//max eneryPer pymemo
-	line += "pymemoMaxAllowedCost "
+	line += "pymemoMaxEnergy "
 	line += "price "
 
 	mng.log.Println(line)
@@ -186,8 +186,8 @@ func (mng *Manager) logCurrentStatus() {
 	line += strconv.FormatFloat(mng.throghput, 'f', 4, 64) + " "
 	//evolución coste  un pymemo
 
-	line += strconv.FormatFloat(mng.totalCost/float64(mng.totalRqt), 'f', 4, 64) + " "
-	line += strconv.FormatFloat(mng.restrictions.maxAllowedCostPerPymemo, 'f', 4, 64) + " "
+	line += strconv.FormatFloat(mng.totalEnergy/float64(mng.totalRqt), 'f', 4, 64) + " "
+	line += strconv.FormatFloat(mng.restrictions.maxAllowedEnergyPerPymemo, 'f', 4, 64) + " "
 	line += strconv.FormatFloat(mng.state.energyPrice, 'f', 4, 64) + " "
 	mng.log.Println(line)
 }
@@ -214,9 +214,8 @@ func (mng *Manager) ChangeAveragePower(value float64) {
 	mng.Lock()
 	mng.state.averagePower = value
 	mng.Unlock()
-	energy := value * 60
-	cost := energy / 360000 * mng.state.energyPrice
-	mng.totalCost += cost
+
+	mng.totalEnergy += value * 60
 	log.Println("current  power ", value)
 }
 

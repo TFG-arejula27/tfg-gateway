@@ -7,13 +7,13 @@ import (
 )
 
 type Configuration struct {
-	Port                   string  `json:"port"`
-	ForwardAdress          string  `json:"forwardAdress"`
-	MaxOcupation           int     `json:"maxOcupation"`
-	MaxThreshold           int     `json:"threshold"`
-	MaxPowerAllowed        float64 `json:"maxPowerAllowed"`
-	MaxFrqz                int     `json:"maxFrequenzy"`
-	MaxEnergyCostPerPymemo float64 `json:"maxEnergyCostPerPymemo"`
+	Port                      string  `json:"port"`
+	ForwardAdress             string  `json:"forwardAdress"`
+	MaxOcupation              int     `json:"maxOcupation"`
+	MaxThreshold              int     `json:"threshold"`
+	MaxPowerAllowed           float64 `json:"maxPowerAllowed"`
+	MaxFrqz                   int     `json:"maxFrequenzy"`
+	MaxAllowedEnergyPerPymemo float64 `json:"maxAllowedEnergyPerPymemo"`
 }
 
 func SetConfig(dir string) Configuration {

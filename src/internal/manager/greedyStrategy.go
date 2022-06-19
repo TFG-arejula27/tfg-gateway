@@ -142,8 +142,7 @@ func beatsMaxPower(s state, e ModelElement, r restrictions) bool {
 
 func beatsMaxCostPerPymemo(s state, e ModelElement, r restrictions) bool {
 	pymemoEnergyCost := e.energy / float64(e.decision.ocupation) //J
-	maxCost := pymemoEnergyCost / 3600000 * s.energyPrice
-	if maxCost > r.maxAllowedCostPerPymemo {
+	if pymemoEnergyCost > r.maxAllowedEnergyPerPymemo {
 		return true
 	}
 	return false

@@ -17,7 +17,7 @@ func main() {
 	strategy := manager.NewGreedyStratey(conf.MaxOcupation, dirConf)
 
 	last := conf.ForwardAdress == ""
-	manager := manager.NewManager(strategy, last, conf.MaxOcupation, conf.MaxPowerAllowed, conf.MaxThreshold, dirConf, conf.MaxFrqz, conf.MaxEnergyCostPerPymemo)
+	manager := manager.NewManager(strategy, last, conf.MaxOcupation, conf.MaxPowerAllowed, conf.MaxThreshold, dirConf, conf.MaxFrqz, conf.MaxAllowedEnergyPerPymemo)
 	fmt.Println(conf)
 	r := receptor.NewReceptor(manager)
 	go runReceptor(r)
