@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -49,7 +48,8 @@ type Manager struct {
 	state state
 	stats stats
 
-	energyPerRqt []pymemoProperties
+	totalEnergy float64
+	totalRqt    int
 
 	//outpus
 	threshold       int
@@ -90,7 +90,6 @@ func NewManager(str strategy, last bool, ocupation int, maxAllowedPower float64,
 			maxAllowedCostPerPymemo: maxAllowedCostPerPymemo},
 		maxOcupation: ocupation,
 		log:          logMng,
-		energyPerRqt: []pymemoProperties{},
 	}
 
 	mng.setFrecuenzy(maxFrqz)
@@ -186,8 +185,7 @@ func (mng *Manager) logCurrentStatus() {
 	//throghtput
 	line += strconv.FormatFloat(mng.throghput, 'f', 4, 64) + " "
 	//evolución coste  un pymemo
-	pymemoEnergyCost := mng.energyPymemo //J
-	cost := pymemoEnergyCost / 3600000 * mng.state.energyPrice
+	cost := mng.totalEnergy / float64(mng.totalRqt)
 	line += strconv.FormatFloat(cost, 'f', 4, 64) + " "
 	line += strconv.FormatFloat(mng.restrictions.maxAllowedCostPerPymemo, 'f', 4, 64) + " "
 	line += strconv.FormatFloat(mng.state.energyPrice, 'f', 4, 64) + " "
@@ -216,10 +214,7 @@ func (mng *Manager) ChangeAveragePower(value float64) {
 	mng.Lock()
 	mng.state.averagePower = value
 	mng.Unlock()
-	for _, rqt := range mng.energyPerRqt {
-		rqt.energy += value * 60 / float64(mng.curretExecution)
-
-	}
+	mng.totalEnergy += value * 60
 	log.Println("current  power ", value)
 }
 
@@ -279,22 +274,7 @@ func (mng *Manager) GetThreshold() int {
 	return mng.threshold
 }
 
-func (mng *Manager) StartRqt(id int) {
-	mng.curretExecution++
-	mng.energyPerRqt = append(mng.energyPerRqt, pymemoProperties{id: id})
-
-}
-
-func (mng *Manager) RqtEnded(id int) {
-	mng.curretExecution--
-	for i, rqt := range mng.energyPerRqt {
-		if rqt.id == id {
-			mng.energyPymemo = rqt.energy
-			fmt.Println("energía un pymemo", rqt.energy)
-			mng.energyPerRqt = append(mng.energyPerRqt[:i], mng.energyPerRqt[i+1:]...)
-			return
-		}
-
-	}
+func (mng *Manager) RqtEnded() {
+	mng.totalRqt++
 
 }
