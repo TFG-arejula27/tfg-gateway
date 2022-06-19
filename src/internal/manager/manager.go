@@ -185,7 +185,8 @@ func (mng *Manager) logCurrentStatus() {
 	//throghtput
 	line += strconv.FormatFloat(mng.throghput, 'f', 4, 64) + " "
 	//evolución coste  un pymemo
-	cost := mng.totalEnergy / float64(mng.totalRqt)
+	energy := mng.totalEnergy / float64(mng.totalRqt)
+	cost := energy / 360000 * mng.state.energyPrice
 	line += strconv.FormatFloat(cost, 'f', 4, 64) + " "
 	line += strconv.FormatFloat(mng.restrictions.maxAllowedCostPerPymemo, 'f', 4, 64) + " "
 	line += strconv.FormatFloat(mng.state.energyPrice, 'f', 4, 64) + " "
