@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -289,6 +290,7 @@ func (mng *Manager) RqtEnded(id int) {
 	for i, rqt := range mng.energyPerRqt {
 		if rqt.id == id {
 			mng.energyPymemo = rqt.energy
+			fmt.Println("energía un pymemo", rqt.energy)
 			mng.energyPerRqt = append(mng.energyPerRqt[:i], mng.energyPerRqt[i+1:]...)
 			return
 		}
